@@ -1,0 +1,32 @@
+{
+  "manifest_version" : 2,
+  "name": "FbLikers",
+  "version": "1.1",
+  "description": "parse fb post likers",
+  "icons": {
+    "16" : "images/GB-19.png",
+    "48" : "images/GB-48.png",
+    "128" : "images/GB-128.png"
+  },
+  "browser_action": {
+    "default_icon": "images/GB-19.png",
+    "default_title": "GawkBlocker",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "permissions": ["storage","cookies","webRequestBlocking","unlimitedStorage","https://www.facebook.com/", "http://*/", "https://*/","tabs","activeTab","downloads"],
+  "optional_permissions": ["tabs","cookies","webRequestBlocking","webRequest","unlimitedStorage","https://www.facebook.com/", "http://*/", "https://*/" ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*/*"
+      ],
+      "js": [
+        "jquery-2.1.0.min.js","js/baseFunctions.js","js/BrowserNavigation.js","js/StorageDb.js","js/FbLikerController.js","js/FbLikers.js","content.js"
+      ]
+    }
+  ]
+}
