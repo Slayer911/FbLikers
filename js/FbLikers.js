@@ -24,7 +24,6 @@ FbLikers.prototype.run = function (callback) {
  * @param callback
  */
 FbLikers.prototype._loadAllLikersPages = function (callback) {
-    console.log('_loadAllLikersPages');
     // Load all likers pages
     var nextPageInterval = setInterval(function () {
         var nextPageElementSelector = '#reaction_profile_pager';
