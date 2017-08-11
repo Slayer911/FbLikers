@@ -5,6 +5,7 @@
  */
 BrowserNavigation = function (moduleHash) {
     this.moduleHash = moduleHash;
+    this.currentHash = location.hash;
 };
 
 /**
@@ -12,7 +13,7 @@ BrowserNavigation = function (moduleHash) {
  * @returns {boolean}
  */
 BrowserNavigation.prototype.isCurrentModule = function () {
-    return location.hash == this.moduleHash;
+    return this.currentHash == this.moduleHash;
 };
 
 /**

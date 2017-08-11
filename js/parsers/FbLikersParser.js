@@ -2,19 +2,27 @@
  * Fb Likers
  * @constructor
  */
-FbLikers = function () {
-};
+FbLikersParser = function () {};
 
 /**
  * Run parser on current page
  * @param callback
  */
-FbLikers.prototype.run = function (callback) {
+FbLikersParser.prototype.run = function (callback) {
     var self = this;
     self._openLikersPopup(function () {
         self._loadAllLikersPages(function () {
             var profilesId = self._getLikersProfilesId();
-            callback(profilesId);
+            var dataForReturn = [];
+            for(var key in profilesId){
+                if(profilesId.hasOwnProperty(key)){
+                    dataForReturn.push({
+                        'type' : 'like',
+                        'fb_id' : profilesId[key]
+                    })
+                }
+            }
+            callback(dataForReturn);
         })
     });
 };
@@ -23,7 +31,7 @@ FbLikers.prototype.run = function (callback) {
  * Load all pages with likers on popup
  * @param callback
  */
-FbLikers.prototype._loadAllLikersPages = function (callback) {
+FbLikersParser.prototype._loadAllLikersPages = function (callback) {
     // Load all likers pages
     var nextPageInterval = setInterval(function () {
         var nextPageElementSelector = '#reaction_profile_pager';
@@ -43,39 +51,14 @@ FbLikers.prototype._loadAllLikersPages = function (callback) {
  * Open popup with likers
  * @param {function} callback
  */
-FbLikers.prototype._openLikersPopup = function (callback) {
-    var self = this;
-
+FbLikersParser.prototype._openLikersPopup = function (callback) {
     setTimeout(function () {
         eventFire($('._2x4v')[0], 'click');
         setTimeout(function () {
-            // Post open for full window
-            if (self._closeFullScreenPost()) {
-                // Try open popup again
-                setTimeout(function () {
-                    self._openLikersPopup(callback);
-                }, 1000);
-            } else {
-                // return callback
-                callback();
-            }
+            // return callback
+            callback();
         }, 1000);
     }, 2000);
-};
-
-/**
- * Close full screen post
- * @param callback
- * @returns {boolean}
- */
-FbLikers.prototype._closeFullScreenPost = function (callback) {
-    var closeButton = $('[data-testid="xhp_fb__photos__snowliftclose"]:visible');
-    if (closeButton.length) {
-        eventFire(closeButton[0], 'click');
-        return true;
-
-    }
-    return false;
 };
 
 /**
@@ -83,7 +66,7 @@ FbLikers.prototype._closeFullScreenPost = function (callback) {
  * @param callback
  * @returns {Array}
  */
-FbLikers.prototype._getLikersProfilesId = function (callback) {
+FbLikersParser.prototype._getLikersProfilesId = function (callback) {
     // Parse likers profile urls
     var likersAElements = $('._5j0e.fsl.fwb.fcb a'),
         results = [],

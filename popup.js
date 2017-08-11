@@ -7,15 +7,20 @@ var frontController = {
      */
     'init': function () {
 
-        var storage = new StorageDb('fbLiker');
+        var storage = new StorageDb('FbLiker');
         /**
          * @type {FbLikerController}
          */
         this.fbCLikerController = new FbLikerController(storage);
         /**
+         *  @type {ParserActivityController}
+         **/
+        this.parserActivityController = new ParserActivityController(storage, 'Parse');
+
+        /**
          * @type {BrowserNavigation}
          */
-        this.browserNavigator = new BrowserNavigation('#fbLikers');
+        this.browserNavigator = new BrowserNavigation('#FbLiker');
 
 
         this.initElements();
@@ -37,6 +42,9 @@ var frontController = {
             'downloadResults': $('#result-download'),
             'resultFlush': $('#result-flush')
         };
+
+        // Restore last parser activity values
+        this.parserActivityController.restoreDomInterfaceOptions();
     },
 
 
@@ -50,10 +58,15 @@ var frontController = {
                 self.elements.parserStopButton.show();
                 self.elements.parserStartButton.hide();
                 self.elements.urlListTextArea.attr('disabled', 'disabled');
+                // Disable parser activity interface
+                self.parserActivityController.disableDomInterface();
+
             } else {
                 self.elements.parserStartButton.show();
                 self.elements.parserStopButton.hide();
                 self.elements.urlListTextArea.removeAttr('disabled');
+                // Activate parser activity interface
+                self.parserActivityController.activateDomInterface();
             }
             self.calculatePluginStat();
         });
@@ -64,19 +77,11 @@ var frontController = {
      */
     'initEvents': function () {
         var self = this;
+        self.elements.urlListTextArea.change(function () {
+            self.fbCLikerController.setUrlList(self._getUrlListFromField());
+        });
         this.elements.parserStartButton.click(function () {
-            var urlList = self.elements.urlListTextArea.val();
-            urlList = urlList.split("\n");
-            self.fbCLikerController.start(urlList);
-            self.checkBlocks();
-            // Move to next page
-            var nextUrl = urlList.shift();
-            if (nextUrl) {
-                chrome.tabs.update({url: self.browserNavigator.getUrlWithModuleHash(nextUrl)});
-            } else {
-                alert('Нет записей');
-                self.fbCLikerController.stop();
-            }
+            self._eventParserStart();
         });
         this.elements.parserStopButton.click(function () {
             self.fbCLikerController.stop();
@@ -94,6 +99,55 @@ var frontController = {
         chrome.storage.onChanged.addListener(function (changes, namespace) {
             self.checkBlocks();
         });
+        // Set change detector of parser activity
+        this.parserActivityController.setChangeDetector();
+    },
+
+    /**
+     * Event - start parser
+     */
+    '_eventParserStart': function () {
+        var urlList = this._getUrlListFromField();
+        this.fbCLikerController.start(urlList);
+        this.checkBlocks();
+        // Move to next page
+        var nextUrl = urlList.shift();
+        if (nextUrl) {
+
+            // Check parsers
+            var parserActivity = this.parserActivityController.getNewActivity();
+            if (this.parserActivityController.atLeastOneItemIsActive(parserActivity)) {
+
+                if(parserActivity.FbPostsParser){
+                    var activeParsers = this.parserActivityController.getActiveParsers(parserActivity);
+                    if(activeParsers.length > 1){
+                        alert('Парсер "post" нельзя запускать с другими парсерами.');
+                        this.fbCLikerController.stop();
+                        return;
+                    }
+                }
+
+                window.open(this.browserNavigator.getUrlWithModuleHash(nextUrl),this.browserNavigator.moduleHash,'location,width=1200,height=1000,top=0');
+            } else {
+                alert('Вы должны выбрать по крайней мере 1 тип парсинга');
+                this.fbCLikerController.stop();
+            }
+
+        } else {
+            alert('Нет записей');
+            this.fbCLikerController.stop();
+        }
+    },
+
+    /**
+     * Get url list from client field
+     * @returns {*}
+     */
+    '_getUrlListFromField': function () {
+        var urlList = this.elements.urlListTextArea.val();
+        urlList = urlList.split("\n");
+
+        return urlList;
     },
 
     /**
@@ -108,7 +162,7 @@ var frontController = {
             self.elements.urlListStatus.html('Обработано ' + parseInt(urlDoneList.length) + ' url');
         });
         this.fbCLikerController.getResult(function (result) {
-            self.elements.resultStatus.html('Собрано профилей : ' + result.length);
+            self.elements.resultStatus.html('Собрано записей : ' + result.length);
         });
     }
 

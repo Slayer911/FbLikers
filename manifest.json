@@ -1,7 +1,7 @@
 {
   "manifest_version" : 2,
-  "name": "FbLikers",
-  "version": "1.1",
+  "name": "FbLikersParser",
+  "version": "2.0",
   "description": "parse fb post likers",
   "icons": {
     "16" : "images/GB-19.png",
@@ -10,7 +10,7 @@
   },
   "browser_action": {
     "default_icon": "images/GB-19.png",
-    "default_title": "GawkBlocker",
+    "default_title": "FbLikersParser",
     "default_popup": "popup.html"
   },
   "background": {
@@ -25,7 +25,23 @@
         "*://*/*"
       ],
       "js": [
-        "jquery-2.1.0.min.js","js/baseFunctions.js","js/BrowserNavigation.js","js/StorageDb.js","js/FbLikerController.js","js/FbLikers.js","content.js"
+        "jquery-2.1.0.min.js",
+        "js/baseFunctions.js",
+
+        "js/BrowserNavigation.js",
+        "js/StorageDb.js",
+
+        "js/controllers/ContentController.js",
+        "js/controllers/FbLikerController.js",
+        "js/controllers/ParserActivityController.js",
+
+        "js/parsers/FbLikersParser.js",
+        "js/parsers/FbPostsParser.js",
+        "js/parsers/FbSharesParser.js",
+        "js/parsers/FbCommentsParser.js",
+        "/js/ParserComposite.js",
+
+        "content.js"
       ]
     }
   ]

@@ -13,6 +13,56 @@ function eventFire(el, type) {
     }
 }
 
+
+
+/**
+ * Make all objects in array with the same keys
+ * @param objectsArray
+ * @param keysOrder
+ * @returns {{}}
+ */
+function makeSameKeysInObjects(objectsArray,keysOrder) {
+    var currentObject,
+        allObjectKeys = {},
+        newObjectsArray = {};
+
+    // Get all keys
+    for (var key in objectsArray) {
+        if (objectsArray.hasOwnProperty(key)) {
+            currentObject = objectsArray[key];
+            for (var keyTemp in currentObject) {
+                if (currentObject.hasOwnProperty(keyTemp)) {
+                    if (typeof allObjectKeys[keyTemp] == 'undefined') {
+                        allObjectKeys[keyTemp] = true;
+                    }
+                }
+            }
+        }
+    }
+
+    // Add missing items
+    var newCurrentObject,keyOfAllObjectKeys;
+    for (key in objectsArray) {
+        if (objectsArray.hasOwnProperty(key)) {
+            currentObject = objectsArray[key];
+            newCurrentObject = {};
+            for (keyOfAllObjectKeys in allObjectKeys) {
+                if (allObjectKeys.hasOwnProperty(keyOfAllObjectKeys)) {
+                    if (typeof currentObject[keyOfAllObjectKeys] == 'undefined') {
+                        newCurrentObject[keyOfAllObjectKeys] = '';
+                    }else{
+                        newCurrentObject[keyOfAllObjectKeys] = currentObject[keyOfAllObjectKeys];
+                    }
+                }
+            }
+            newObjectsArray[key] = newCurrentObject;
+        }
+    }
+
+    return newObjectsArray;
+}
+
+
 /**
  * Create csv file from objct
  * @param objectsArray

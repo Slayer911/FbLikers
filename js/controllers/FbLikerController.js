@@ -1,5 +1,5 @@
 /**
- * Fb Liker
+ *
  * @param {StorageDb} storageDb
  * @constructor
  */
@@ -7,9 +7,7 @@ var FbLikerController = function (storageDb) {
     if (!(storageDb instanceof StorageDb)) {
         throw('Input variable "storageDb" must be instance of "StorageDb" class');
     }
-    /**
-     * @var {StorageDb} storage
-     */
+    /* @var {StorageDb} storage */
     this.storage = storageDb;
 };
 
@@ -23,7 +21,7 @@ FbLikerController.prototype.start = function (urlList) {
         throw('"urlList" must be array');
     }
     if (urlList.length) {
-        this._setUrlList(urlList);
+        this.setUrlList(urlList);
         this._setStatus(true);
     }
     this._flushDoneUrlList();
@@ -54,7 +52,7 @@ FbLikerController.prototype.isActive = function (callback) {
  */
 FbLikerController.prototype.getUrlList = function (callback) {
     this.storage.get('urlList', function (urlList) {
-        callback(urlList);
+        callback(urlList || []);
     });
 };
 
@@ -68,29 +66,31 @@ FbLikerController.prototype.getDoneUrlList = function (callback) {
     });
 };
 
+
 /**
  * Add result by parsing
  * @param url
- * @param profilesId
+ * @param {Object} data
+ * Example: {"fb_id":"123","comment":"la-la-la"}
  */
-FbLikerController.prototype.addResult = function (url, profilesId) {
+FbLikerController.prototype.addResult = function (url, data) {
     var self = this;
-    this._moveUrlForParseToDoneUrlList(url);
     this.getResult(function (result) {
-        var profileId;
-        for (var key in profilesId) {
-            if (profilesId.hasOwnProperty(key)) {
-                profileId = profilesId[key];
-                result.push({
-                    'from': url,
-                    'fb_id': profileId
+        var dataItem;
+        for (var key in data) {
+            if (data.hasOwnProperty(key)) {
+                dataItem = data[key];
+                dataItem = $.extend(dataItem,{
+                    'from': url
                 });
+                result.push(dataItem);
             }
         }
 
         self.storage.set('result', result);
     });
 };
+
 
 /**
  * Get result
@@ -114,6 +114,7 @@ FbLikerController.prototype.flushResult = function () {
  */
 FbLikerController.prototype.downloadResults = function (fileName) {
     this.getResult(function (result) {
+        result = makeSameKeysInObjects(result);
         result = objectToCsv(result);
 
         downloadFile(fileName + '.csv', result);
@@ -123,16 +124,15 @@ FbLikerController.prototype.downloadResults = function (fileName) {
 /**
  * Move url from "Task url list" to "Done url list"
  * @param url
- * @private
  */
-FbLikerController.prototype._moveUrlForParseToDoneUrlList = function (url) {
+FbLikerController.prototype.moveUrlForParseToDoneUrlList = function (url) {
     var self = this;
     this._addToDoneUrlList(url);
     this.getUrlList(function (urlList) {
         urlIndex = urlList.indexOf(url);
         if (urlIndex != -1) {
             urlList.splice(urlIndex, 1);
-            self._setUrlList(urlList);
+            self.setUrlList(urlList);
         }
     });
 };
@@ -173,6 +173,6 @@ FbLikerController.prototype._setStatus = function (active) {
  * Set url list
  * @param urlList
  */
-FbLikerController.prototype._setUrlList = function (urlList) {
+FbLikerController.prototype.setUrlList = function (urlList) {
     this.storage.set('urlList', urlList);
 };
