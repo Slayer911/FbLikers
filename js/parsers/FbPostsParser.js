@@ -3,7 +3,7 @@
  * @constructor
  */
 var FbPostsParser = function () {
-    this.maxLoading = 1;
+    this.maxLoading = 250;
 };
 
 /**
